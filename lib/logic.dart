@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 class QuickTransactionViewModel extends ChangeNotifier {
-  double currentAmount = 0.0;
+  int currentAmount = 0;
   bool isExpense = true;
 
-  final List<double> quickAmounts = [1, 5, 10, 50, 100, 500];
+  final List<int> quickAmounts = [1, 5, 10, 50, 100, 500];
 
   final List<Map<String, dynamic>> categories = [
     {'name': 'طعام', 'icon': Icons.restaurant},
@@ -13,13 +13,13 @@ class QuickTransactionViewModel extends ChangeNotifier {
     {'name': 'فواتير', 'icon': Icons.receipt},
   ];
 
-  void addAmount(double value) {
+  void addAmount(int value) {
     currentAmount += value;
     notifyListeners();
   }
 
   void clearAmount() {
-    currentAmount = 0.0;
+    currentAmount = 0;
     notifyListeners();
   }
 
@@ -39,7 +39,7 @@ class QuickTransactionViewModel extends ChangeNotifier {
     };
 
     debugPrint(
-      "تم الحفظ: ${isExpense ? 'مصروف' : 'مدخول'} | الفئة: $categoryName | المبلغ: $currentAmount",
+      "حُفظ: ${isExpense ? 'مصروف' : 'مدخول'} | الفئة: $categoryName | المبلغ: $currentAmount",
     );
 
     // تصفير العداد بعد الحفظ للعملية التالية

@@ -1,8 +1,8 @@
 class MonthlySummary {
   final int? id;
   final String monthKey; // e.g. 1447-10
-  final double openingBalance;
-  final double closingBalance;
+  final int openingBalance;
+  final int closingBalance;
   final int createdAt;
 
   MonthlySummary({
@@ -24,8 +24,8 @@ class MonthlySummary {
   factory MonthlySummary.fromMap(Map<String, dynamic> m) => MonthlySummary(
     id: m['id'] as int?,
     monthKey: m['month_key'] as String,
-    openingBalance: (m['opening_balance'] as num).toDouble(),
-    closingBalance: (m['closing_balance'] as num).toDouble(),
+    openingBalance: (m['opening_balance'] as num).toInt(),
+    closingBalance: (m['closing_balance'] as num).toInt(),
     createdAt: m['created_at'] as int,
   );
 }

@@ -30,7 +30,7 @@ class HijriHelper {
     final month = int.tryParse(parts[1]) ?? 0;
     if (month < 1 || month > _monthNames.length) return monthKey;
 
-    return '${_monthNames[month - 1]} ${year}هـ';
+    return '${_monthNames[month - 1]} $year هـ';
   }
 
   /// Compute the next Hijri month key from a given `YYYY-MM` Hijri monthKey.

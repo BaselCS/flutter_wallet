@@ -116,7 +116,7 @@ class _HomePageState extends State<HomePage> {
     if (messenger == null) return;
 
     messenger.showSnackBar(
-      const SnackBar(content: Text('تم توليد بيانات وهمية لآخر 6 أشهر')),
+      const SnackBar(content: Text('ولدت بيانات وهمية لآخر 6 أشهر')),
     );
   }
 
@@ -190,7 +190,7 @@ class _HomePageState extends State<HomePage> {
     if (messenger == null) return;
 
     messenger.showSnackBar(
-      SnackBar(content: Text('تم حذف الفئة: ${category.name}')),
+      SnackBar(content: Text('حُذفت الفئة: ${category.name}')),
     );
   }
 

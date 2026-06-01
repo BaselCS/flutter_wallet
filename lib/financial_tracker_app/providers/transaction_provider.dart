@@ -13,14 +13,14 @@ class TransactionProvider extends ChangeNotifier {
   bool _isInitialized = false;
   String viewedMonthKey = HijriHelper.currentMonthKey();
 
-  double currentAmount = 0.0;
+  int currentAmount = 0;
   bool isAddition = true; // true: إضافة (+), false: طرح (-)
 
   // قيم مبدئية للعرض (will be computed from DB later)
-  double actualBalance = 0.0;
-  double totalIncome = 0.0;
-  double totalExpenses = 0.0;
-  double previousBalance = 0.0;
+  int actualBalance = 0;
+  int totalIncome = 0;
+  int totalExpenses = 0;
+  int previousBalance = 0;
 
   final List<int> quickAmounts = [10, 5, 1, 500, 100, 50];
 
@@ -72,7 +72,7 @@ class TransactionProvider extends ChangeNotifier {
     final priorTransactions = await _db.getTransactionsBeforeMonth(monthKey);
 
     if (latestSummary == null) {
-      previousBalance = 0.0;
+      previousBalance = 0;
       for (final t in priorTransactions) {
         previousBalance += t.isIncome ? t.amount : -t.amount;
       }
@@ -90,8 +90,8 @@ class TransactionProvider extends ChangeNotifier {
     }
 
     final txns = await _db.getTransactionsByMonth(monthKey);
-    totalIncome = 0.0;
-    totalExpenses = 0.0;
+    totalIncome = 0;
+    totalExpenses = 0;
 
     for (final t in txns) {
       if (t.isIncome) {
@@ -196,7 +196,7 @@ class TransactionProvider extends ChangeNotifier {
           TransactionModel(
             categoryId: category.id ?? 0,
             categoryName: category.name,
-            amount: amount.toDouble(),
+            amount: amount.toInt(),
             isIncome: isIncome,
             hijriMonth: monthKey,
             createdAt: createdAt,
@@ -219,7 +219,7 @@ class TransactionProvider extends ChangeNotifier {
     await _db.clearAllData();
     _resetInitialization();
     viewedMonthKey = HijriHelper.currentMonthKey();
-    currentAmount = 0.0;
+    currentAmount = 0;
     isAddition = true;
     await init();
   }
@@ -256,8 +256,8 @@ class TransactionProvider extends ChangeNotifier {
     final current = viewedMonthKey;
     final txns = await _db.getTransactionsByMonth(current);
 
-    double income = 0.0;
-    double expenses = 0.0;
+    int income = 0;
+    int expenses = 0;
     for (final t in txns) {
       if (t.isIncome) {
         income += t.amount;
@@ -290,13 +290,13 @@ class TransactionProvider extends ChangeNotifier {
 
   void addAmount(int value) {
     // إذا كان الوضع طرح، نجمع القيمة بالسالب، وإلا بالموجب
-    double finalValue = isAddition ? value.toDouble() : -value.toDouble();
+    int finalValue = isAddition ? value : -value;
     currentAmount += finalValue;
     notifyListeners();
   }
 
   void clearAmount() {
-    currentAmount = 0.0;
+    currentAmount = 0;
     notifyListeners();
   }
 
