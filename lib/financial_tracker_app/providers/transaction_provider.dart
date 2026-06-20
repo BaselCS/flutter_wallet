@@ -6,6 +6,7 @@ import '../models/category.dart';
 import '../models/transaction.dart';
 import '../models/monthly_summary.dart';
 import '../utils/hijri_helper.dart';
+import '../services/csv_import_service.dart';
 
 class TransactionProvider extends ChangeNotifier {
   final DatabaseService _db = DatabaseService();
@@ -59,6 +60,18 @@ class TransactionProvider extends ChangeNotifier {
     for (final c in defaults) {
       await _db.insertCategory(c);
     }
+  }
+
+  Future<int> importFromCsv(String filePath) async {
+    await init();
+    final count = await CsvImportService.importCsv(filePath);
+
+    // إذا تم استيراد بيانات بنجاح، نقوم بإعادة تحميل الحالة
+    if (count > 0) {
+      await loadCategories();
+      await _reloadState();
+    }
+    return count;
   }
 
   Future<void> _loadCategories() async {

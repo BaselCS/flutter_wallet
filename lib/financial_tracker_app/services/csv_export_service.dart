@@ -6,16 +6,12 @@ import 'package:sqflite/sqflite.dart';
 import 'database_service.dart';
 
 class CsvExportService {
-  /// Exports all transactions for [monthKey] into a CSV file inside the
-  /// app database directory and returns the absolute file path.
-  static Future<String> exportMonth(String monthKey) async {
+  /// يقوم بتصدير جميع العمليات إلى ملف CSV
+  static Future<String> exportAll() async {
     final db = await DatabaseService().database;
-    final rows = await db.query(
-      'transactions',
-      where: 'hijri_month = ?',
-      whereArgs: [monthKey],
-      orderBy: 'created_at DESC',
-    );
+
+    // تنفيذ الاستعلام لجلب كافة الصفوف بدون شرط الشهر
+    final rows = await db.query('transactions', orderBy: 'created_at DESC');
 
     final buffer = StringBuffer();
     buffer.writeln('id,category,amount,is_income,hijri_month,created_at');
@@ -30,7 +26,7 @@ class CsvExportService {
     }
 
     final dbPath = await getDatabasesPath();
-    final fileName = 'transactions_$monthKey.csv'.replaceAll(':', '-');
+    final fileName = 'all_transactions_export.csv';
     final path = join(dbPath, fileName);
     final file = File(path);
     await file.writeAsString(buffer.toString());

@@ -6,6 +6,7 @@ import 'financial_tracker_app/providers/transaction_provider.dart';
 import 'financial_tracker_app/models/category.dart';
 import 'financial_tracker_app/utils/theme.dart';
 import 'financial_tracker_app/services/csv_export_service.dart';
+import 'package:file_picker/file_picker.dart';
 import 'financial_tracker_app/widgets/popup_dialog.dart';
 
 final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
@@ -56,6 +57,49 @@ class _HomePageState extends State<HomePage> {
       if (!mounted) return;
       context.read<TransactionProvider>().init();
     });
+  }
+
+  Future<void> _importDataCsv() async {
+    // 1. قراءة المزود قبل عملية الانتظار لتجنب خطأ سياق البناء
+    final provider = context.read<TransactionProvider>();
+
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['csv'],
+      );
+
+      if (result != null && result.files.single.path != null) {
+        final path = result.files.single.path!;
+
+        final count = await provider.importFromCsv(path);
+
+        final messenger = appMessengerKey.currentState;
+
+        // 2. استخدام كتلة برمجية لجملة الشرط
+        if (messenger == null) {
+          return;
+        }
+
+        messenger.showSnackBar(
+          SnackBar(content: Text('تم استيراد $count عملية بنجاح')),
+        );
+      }
+    } catch (e) {
+      final messenger = appMessengerKey.currentState;
+
+      if (messenger == null) {
+        return;
+      }
+
+      // عرض نص الاستثناء الفعلي للمساعدة في تصحيح الأخطاء
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('حدث خطأ أثناء الاستيراد: ${e.toString()}'),
+          duration: const Duration(seconds: 5),
+        ),
+      );
+    }
   }
 
   Future<void> _showAllTransactionsHistory() async {
@@ -215,14 +259,31 @@ class _HomePageState extends State<HomePage> {
                 await _showAllTransactionsHistory();
               },
             ),
+            // ListTile(
+            //   leading: const Icon(Icons.file_upload),
+            //   title: const Text('تصدير البيانات (CSV)'),
+            //   onTap: () async {
+            //     Navigator.of(dialogContext).pop();
+            //     await _exportCurrentMonthCsv();
+            //   },
+            // ),
             ListTile(
-              leading: const Icon(Icons.auto_awesome),
-              title: const Text('توليد بيانات وهمية لآخر 6 أشهر'),
+              leading: const Icon(Icons.file_download),
+              title: const Text('استيراد بيانات (CSV)'),
               onTap: () async {
                 Navigator.of(dialogContext).pop();
-                await _generateFakeDataForLastSixMonths();
+                await _importDataCsv();
               },
             ),
+            const Divider(),
+            // ListTile(
+            //   leading: const Icon(Icons.auto_awesome),
+            //   title: const Text('توليد بيانات وهمية لآخر 6 أشهر'),
+            //   onTap: () async {
+            //     Navigator.of(dialogContext).pop();
+            //     await _generateFakeDataForLastSixMonths();
+            //   },
+            // ),
             ListTile(
               leading: const Icon(Icons.delete_forever, color: Colors.red),
               title: const Text(
@@ -241,8 +302,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _exportCurrentMonthCsv() async {
-    final month = context.read<TransactionProvider>().viewedMonthKey;
-    final path = await CsvExportService.exportMonth(month);
+    final path = await CsvExportService.exportAll();
 
     try {
       await SharePlus.instance.share(
@@ -319,7 +379,7 @@ class _HomePageState extends State<HomePage> {
               ),
               GestureDetector(
                 onTap: provider.goToCurrentMonth,
-                onLongPress: _showSettingsPopup,
+                onDoubleTap: _showSettingsPopup,
                 child: Text(
                   provider.viewedMonthTitle,
                   style: const TextStyle(
