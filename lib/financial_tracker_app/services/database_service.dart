@@ -66,6 +66,17 @@ class DatabaseService {
     return await db.insert('categories', c.toMap());
   }
 
+  // تحديث بيانات فئة موجودة
+  Future<int> updateCategory(CategoryModel c) async {
+    final db = await database;
+    return await db.update(
+      'categories',
+      c.toMap(),
+      where: 'id = ?',
+      whereArgs: [c.id],
+    );
+  }
+
   Future<int> deleteCategory(int id) async {
     final db = await database;
     return await db.delete('categories', where: 'id = ?', whereArgs: [id]);

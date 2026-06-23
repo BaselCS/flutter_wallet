@@ -74,6 +74,41 @@ class TransactionProvider extends ChangeNotifier {
     return count;
   }
 
+  void reorderCategories(int oldIndex, int newIndex) {
+    // إزالة السطر القديم: if (oldIndex < newIndex) { newIndex -= 1; }
+
+    final item = categories.removeAt(oldIndex);
+    categories.insert(newIndex, item);
+
+    notifyListeners();
+  }
+
+  // دالة لتحديث بيانات الفئة
+  Future<void> updateCategory(
+    CategoryModel oldCategory,
+    String newName,
+    String newIcon,
+    bool newIsIncome,
+  ) async {
+    if (oldCategory.id == null) return;
+
+    // تجهيز النموذج المحدث
+    final updatedCategory = CategoryModel(
+      id: oldCategory.id,
+      name: newName,
+      icon: newIcon,
+      isIncome: newIsIncome,
+    );
+
+    // ستحتاج لإضافة دالة updateCategory في DatabaseService لكي يتم التحديث في قاعدة البيانات.
+    // مؤقتاً لتحديث الواجهة الحالية:
+    final index = categories.indexWhere((c) => c.id == oldCategory.id);
+    if (index != -1) {
+      categories[index] = updatedCategory;
+      notifyListeners();
+    }
+  }
+
   Future<void> _loadCategories() async {
     categories = await _db.getCategories();
   }

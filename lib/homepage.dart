@@ -8,6 +8,7 @@ import 'financial_tracker_app/utils/theme.dart';
 import 'financial_tracker_app/services/csv_export_service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'financial_tracker_app/widgets/popup_dialog.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<ScaffoldMessengerState> appMessengerKey =
@@ -56,7 +57,35 @@ class _HomePageState extends State<HomePage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       context.read<TransactionProvider>().init();
+      _checkFirstLaunch();
     });
+  }
+
+  Future<void> _checkFirstLaunch() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isFirstLaunch = prefs.getBool('is_first_launch') ?? true;
+    if (isFirstLaunch) {
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          backgroundColor: AppTheme.surfaceColor,
+          title: const Text('مساعدة'),
+          content: const Text("""
+السلام عليكم حياك الله
+عند لمسك على اسم الشهر لمرة ستذهب لشهر الحالي
+و عند لمسك إيه مرتين ستظهر لك نافذة مساعدة
+ """),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('حسناً'),
+            ),
+          ],
+        ),
+      );
+      await prefs.setBool('is_first_launch', false);
+    }
   }
 
   Future<void> _importDataCsv() async {
@@ -151,18 +180,18 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Future<void> _generateFakeDataForLastSixMonths() async {
-    await context
-        .read<TransactionProvider>()
-        .generateFakeDataForLastSixMonths();
+  // Future<void> _generateFakeDataForLastSixMonths() async {
+  //   await context
+  //       .read<TransactionProvider>()
+  //       .generateFakeDataForLastSixMonths();
 
-    final messenger = appMessengerKey.currentState;
-    if (messenger == null) return;
+  //   final messenger = appMessengerKey.currentState;
+  //   if (messenger == null) return;
 
-    messenger.showSnackBar(
-      const SnackBar(content: Text('ولدت بيانات وهمية لآخر 6 أشهر')),
-    );
-  }
+  //   messenger.showSnackBar(
+  //     const SnackBar(content: Text('ولدت بيانات وهمية لآخر 6 أشهر')),
+  //   );
+  // }
 
   Future<void> _confirmAndDeleteAllData() async {
     final navigatorContext = appNavigatorKey.currentContext;
@@ -709,48 +738,52 @@ class _HomePageState extends State<HomePage> {
 
                   // عرض الفئات الموجودة
                   final category = provider.categories[index];
-                  return InkWell(
-                    onTap: () => provider.saveTransaction(category.name),
-                    onLongPress: () => _confirmAndDeleteCategory(category),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: AppTheme.bgColor,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: category.isIncome
-                              ? AppTheme.primaryColor
-                              : AppTheme.accentColor,
-                          width: category.isIncome ? 2 : 1,
+
+                  // استخدام CategoryModel كنوع للبيانات بدلاً من المؤشر الثابت
+                  return DragTarget<CategoryModel>(
+                    // التبديل الفوري عند التمرير فوق عنصر آخر
+                    onWillAcceptWithDetails: (details) {
+                      final draggedCategory = details.data;
+
+                      // جلب المؤشر المباشر الحالي للعنصر المسحوب
+                      final oldIndex = provider.categories.indexOf(
+                        draggedCategory,
+                      );
+
+                      if (oldIndex != index && oldIndex != -1) {
+                        provider.reorderCategories(oldIndex, index);
+                      }
+                      return true;
+                    },
+                    builder: (context, candidateData, rejectedData) {
+                      return LongPressDraggable<CategoryModel>(
+                        data: category,
+                        feedback: Material(
+                          color: Colors.transparent,
+                          child: Opacity(
+                            opacity: 0.8,
+                            child: SizedBox(
+                              width: MediaQuery.of(context).size.width / 4,
+                              height: MediaQuery.of(context).size.width / 4,
+                              child: _buildCategoryItem(
+                                category,
+                                provider,
+                                context,
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: AppTheme.circleBg,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Text(
-                              category.icon,
-                              style: const TextStyle(fontSize: 20),
-                            ),
+                        childWhenDragging: Opacity(
+                          opacity: 0.3,
+                          child: _buildCategoryItem(
+                            category,
+                            provider,
+                            context,
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            category.name,
-                            style: TextStyle(
-                              color: category.isIncome
-                                  ? AppTheme.primaryColor
-                                  : AppTheme.accentColor,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                        ),
+                        child: _buildCategoryItem(category, provider, context),
+                      );
+                    },
                   );
                 },
               ),
@@ -758,6 +791,123 @@ class _HomePageState extends State<HomePage> {
           );
         },
       ),
+    );
+  }
+
+  // أداة فرعية لبناء شكل بطاقة الفئة مع زر التعديل
+  Widget _buildCategoryItem(
+    CategoryModel category,
+    TransactionProvider provider,
+    BuildContext context,
+  ) {
+    return Stack(
+      children: [
+        InkWell(
+          onTap: () => provider.saveTransaction(category.name),
+          onDoubleTap: () =>
+              _showEditCategoryOptions(context, category, provider),
+          child: Container(
+            decoration: BoxDecoration(
+              color: AppTheme.bgColor,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: category.isIncome
+                    ? AppTheme.primaryColor
+                    : AppTheme.accentColor,
+                width: category.isIncome ? 2 : 1,
+              ),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppTheme.circleBg,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Text(
+                      category.icon,
+                      style: const TextStyle(fontSize: 20),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  category.name,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: category.isIncome
+                        ? AppTheme.primaryColor
+                        : AppTheme.accentColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // نافذة سفلية تعرض خيارات التعديل والحذف
+  Future<void> _showEditCategoryOptions(
+    BuildContext context,
+    CategoryModel category,
+    TransactionProvider provider,
+  ) async {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppTheme.surfaceColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.edit),
+                title: const Text('تعديل الفئة'),
+                onTap: () async {
+                  Navigator.pop(ctx);
+                  // نستخدم نفس نافذة الإضافة المسبقة كنموذج (يفضل إنشاء نسخة منها للتعديل لاحقاً وتمرير البيانات الحالية لها)
+                  final result = await showDialog<Map<String, dynamic>>(
+                    context: context,
+                    builder: (_) =>
+                        const AddCategoryDialog(), // يمكنك لاحقاً تحويلها لـ EditCategoryDialog وتمرير بيانات الفئة لها
+                  );
+
+                  if (result != null) {
+                    await provider.updateCategory(
+                      category,
+                      result['name'] as String,
+                      result['icon'] as String,
+                      result['isIncome'] as bool,
+                    );
+                  }
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete, color: Colors.red),
+                title: const Text(
+                  'حذف الفئة',
+                  style: TextStyle(color: Colors.red),
+                ),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _confirmAndDeleteCategory(category);
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
