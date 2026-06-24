@@ -381,7 +381,7 @@ class TransactionProvider extends ChangeNotifier {
       actualBalance -= currentAmount;
     }
 
-    // تصفير العداد بعد الحفظ
+    // تصفير العداد بعد الحفظ 
     clearAmount();
   }
 }
