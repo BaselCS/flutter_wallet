@@ -73,7 +73,7 @@ class _HomePageState extends State<HomePage> {
           title: const Text('مساعدة'),
           content: const Text("""
 السلام عليكم حياك الله
-عند لمسك على اسم الشهر لمرة ستذهب لشهر الحالي
+عند لمسك على اسم الشهر لمرة ستذهب لشهر الحاليe
 و عند لمسك إيه مرتين ستظهر لك نافذة مساعدة
  """),
           actions: [
