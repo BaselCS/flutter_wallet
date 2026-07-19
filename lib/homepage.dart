@@ -28,14 +28,34 @@ class MainApp extends StatelessWidget {
         builder: (context, child) {
           return Directionality(
             textDirection: TextDirection.rtl,
-            child: child!,
+            child: Container(
+              color: Colors.grey.shade100, // Background color for desktop view
+              child: Center(
+                child: Container(
+                  constraints: const BoxConstraints(maxWidth: 480),
+                  decoration: BoxDecoration(
+                    color: Colors.white, // Ensure app has a white background internally or default background
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 20,
+                        spreadRadius: 5,
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    child: child!,
+                  ),
+                ),
+              ),
+            ),
           );
         },
         theme: ThemeData(
           scaffoldBackgroundColor: const Color(0xFFF6F4EF),
           fontFamily: 'Tajawal', // يفضل استخدام خط عربي مثل تجوال
         ),
-        home: HomePage(),
+        home: const HomePage(),
       ),
     );
   }
@@ -151,18 +171,18 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Future<void> _generateFakeDataForLastSixMonths() async {
-    await context
-        .read<TransactionProvider>()
-        .generateFakeDataForLastSixMonths();
+  // Future<void> _generateFakeDataForLastSixMonths() async {
+  //   await context
+  //       .read<TransactionProvider>()
+  //       .generateFakeDataForLastSixMonths();
 
-    final messenger = appMessengerKey.currentState;
-    if (messenger == null) return;
+  //   final messenger = appMessengerKey.currentState;
+  //   if (messenger == null) return;
 
-    messenger.showSnackBar(
-      const SnackBar(content: Text('ولدت بيانات وهمية لآخر 6 أشهر')),
-    );
-  }
+  //   messenger.showSnackBar(
+  //     const SnackBar(content: Text('ولدت بيانات وهمية لآخر 6 أشهر')),
+  //   );
+  // }
 
   Future<void> _confirmAndDeleteAllData() async {
     final navigatorContext = appNavigatorKey.currentContext;
