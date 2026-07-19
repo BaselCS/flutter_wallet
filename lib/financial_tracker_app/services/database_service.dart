@@ -1,7 +1,9 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
 import '../models/transaction.dart';
 import '../models/category.dart';
@@ -19,12 +21,31 @@ class DatabaseService {
     _db = await _initDb();
     return _db!;
   }
+# Navigate to the web build directory
+cd build/web
+
+# Initialize a temporary git repository
+git init
+git add .
+git commit -m "Deploy new web build"
+
+# Push it to the gh-pages branch of your repository
+# Replace <YOUR-GITHUB-USERNAME> if your remote is not already configured
+git push --force https://github.com/baselcs/flutter_wallet.git master:gh-pages
+
+# Go back to the main project directory
+cd ../..
 
   Future<Database> _initDb() async {
-    final databasesPath = await getDatabasesPath();
-    final path = join(databasesPath, 'quick_financial_tracker.db');
-
-    return await openDatabase(path, version: 1, onCreate: _onCreate);
+    if (kIsWeb) {
+      databaseFactory = databaseFactoryFfiWeb;
+      final path = 'quick_financial_tracker.db';
+      return await openDatabase(path, version: 1, onCreate: _onCreate);
+    } else {
+      final databasesPath = await getDatabasesPath();
+      final path = join(databasesPath, 'quick_financial_tracker.db');
+      return await openDatabase(path, version: 1, onCreate: _onCreate);
+    }
   }
 
   FutureOr<void> _onCreate(Database db, int version) async {

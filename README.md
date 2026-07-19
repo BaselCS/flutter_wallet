@@ -1,8 +1,34 @@
-# تطبيق تتبع المصاريف — Wallet
- تطبيق خفيف وسريع لتسجيل وتتبع المصاريف اليومية بأقل جهد، مصمم للاستخدام بيد واحدة وبدون الحاجة لكتابة في الغالب
+<div align="center">
 
-![Screenshots Placeholder](./assets/In_app_image1.jpg)
-![Screenshots Placeholder](./assets/In_app_image2.jpg)
+# Wallet — Expense Tracker
+
+[![Built with Flutter](https://img.shields.io/badge/Built_with-Flutter-02569B?style=flat-square&logo=flutter&logoColor=white)](https://flutter.dev)
+[![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen?style=flat-square)](https://baselcs.github.io/flutter_wallet/)
+[![Release Version](https://img.shields.io/github/v/release/BaselCS/flutter_wallet?style=flat-square)](https://github.com/BaselCS/flutter_wallet/releases)
+
+**Choose Language / اختر اللغة**<br>
+[English](#english) | [العربية](#العربية)
+
+<br>
+
+<a href="https://baselcs.github.io/flutter_wallet/">
+  <img src="./assets/In_app_image1.jpg" width="300" alt="App Screenshot 1" style="margin: 0 10px;">
+</a>
+<a href="https://baselcs.github.io/flutter_wallet/">
+  <img src="./assets/In_app_image2.jpg" width="300" alt="App Screenshot 2" style="margin: 0 10px;">
+</a>
+
+<br><br>
+
+[![Live Demo Button](https://img.shields.io/badge/🚀_Play_Live_Demo-02569B?style=for-the-badge)](https://baselcs.github.io/flutter_wallet/)
+
+</div>
+
+---
+
+<h2 id="العربية">تطبيق تتبع المصاريف — Wallet</h2>
+
+تطبيق خفيف وسريع لتسجيل وتتبع المصاريف اليومية بأقل جهد، مصمم للاستخدام بيد واحدة وبدون الحاجة لكتابة في الغالب
 
 ## ملاحظة حول التطوير 
 كان الغرض من التطبيق تجربة تصيميم و تطوير تطبير بوكلاء الذكاء الاصطناعي و عليه فالتصميم و جل الأكواد منشئة من خلالهم 
@@ -58,7 +84,10 @@ flutter build apk --release
 
 
 
-# Wallet — Expense Tracker App
+---
+
+<h2 id="english">Wallet — Expense Tracker App</h2>
+
 A lightweight and fast app for recording and tracking daily expenses with minimal effort, designed for single-handed use and mostly without the need for typing.
 
 
